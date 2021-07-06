@@ -1,0 +1,18 @@
+{% extends 'users/detail.html' %}
+{% import 'forms.html' as forms %}
+
+{% block user_details %}
+
+<div class="col-sm-6">
+  <ul class="list-group" id="messages">
+
+    {% for message in message_list %}
+
+        {{ forms.display_message(message=message) }}
+
+    {% endfor %}
+
+  </ul>
+</div>
+
+{% endblock %}

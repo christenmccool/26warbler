@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% import 'forms.html' as forms %}
+
+{% block content %}
+
+
+  <div class="row">
+
+    <aside class="col-md-4 col-lg-3 col-sm-12" id="home-aside">
+      {{ forms.display_user_card(user=g.user, current_user=true) }}
+    </aside>
+
+    <div class="col-lg-6 col-md-8 col-sm-12">
+      <ul class="list-group" id="messages">
+        {% for message in message_list %}
+
+          {{ forms.display_message(message=message, homepage=true) }}
+      
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+{% endblock %}
