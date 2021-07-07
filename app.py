@@ -57,12 +57,21 @@ def check_loggedin(func):
     @functools.wraps(func)
     def wrapper_check_loggedin(*args, **kwargs):
         if not g.user:
-            flash("Access unauthorized.", "danger")
+            flash("Access unauthorized. Log in to account to access content.", "danger")
             return redirect("/")
         value = func(*args, **kwargs)
         return value
     return wrapper_check_loggedin
 
+def is_admin(func):
+    @functools.wraps(func)
+    def wrapper_is_admin(*args, **kwargs):
+        if not g.user or not g.user.admin:
+            flash("Access unauthorized. Admin access only.", "danger")
+            return redirect("/")
+        value = func(*args, **kwargs)
+        return value
+    return wrapper_is_admin
 
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
@@ -156,15 +165,16 @@ def users_show(user_id):
 
     user = User.query.get_or_404(user_id)
 
+    messages = []
     # snagging messages in order from the database;
     # user.messages won't be in order by default
-    messages = (Message
-                .query
-                .filter(Message.user_id == user_id)
-                .order_by(Message.timestamp.desc())
-                .limit(100)
-                .all())
-
+    if (g.user and g.user.is_following(user)) or user.private == False:
+        messages = (Message
+                    .query
+                    .filter(Message.user_id == user_id)
+                    .order_by(Message.timestamp.desc())
+                    .limit(100)
+                    .all())
 
     return render_template('users/show.html', user=user, message_list=messages)
 
@@ -252,6 +262,7 @@ def edit_profile():
             g.user.image_url=form.image_url.data or User.image_url.default.arg
             g.user.header_image_url=form.header_image_url.data or User.header_image_url.default.arg
             g.user.bio=form.bio.data 
+            g.user.private=form.private.data
 
             db.session.commit()
 

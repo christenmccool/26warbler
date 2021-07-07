@@ -58,7 +58,7 @@
 {%- endmacro %}
 
 
-{% macro display_message(message=message, homepage=false) -%}
+{% macro display_message(message=message, show_like_buttons=false) -%}
 
     <li class="list-group-item">
       <a href="/messages/{{ message.id }}" class="message-link"/>
@@ -72,7 +72,7 @@
         <span class="text-muted">{{ message.timestamp.strftime('%d %B %Y') }}</span>
         <p>{{ message.text }}</p>
       </div>
-      {% if homepage %}
+      {% if show_like_buttons %}
         {% if message.user_id != g.user.id %}
         <button class="
           btn 

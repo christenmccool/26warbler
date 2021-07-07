@@ -11,12 +11,17 @@
     <form method="POST" id="user_form">
       {{ form.hidden_tag() }}
 
-      {% for field in form if field.widget.input_type != 'hidden' %}
+      {% for field in form if field.widget.input_type != 'hidden' and field.type != "BooleanField"%}
         {% for error in field.errors %}
           <span class="text-danger">{{ error }}</span>
         {% endfor %}
         {{ field(placeholder=field.label.text, class="form-control") }}
       {% endfor %}
+
+      <div class="form-check pt-0">
+        {{ form.private(class="form-check-input") }}
+        {{ form.private.label(class="form-check-label") }}
+      </div>
 
       <button class="btn btn-primary btn-lg btn-block">Sign me up!</button>
     </form>

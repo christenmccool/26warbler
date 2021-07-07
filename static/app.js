@@ -11,9 +11,13 @@ $thumbsupBtn.click(async function() {
     msg_id = msg_id.slice(12)
     const response = await axios.post(`/users/add_like/${msg_id}`)
 
-
     $button.toggleClass('btn-primary')
     $button.toggleClass('btn-secondary')
+
+    if (window.location.pathname.includes('/likes')) {
+      $button.parent().remove()
+    }
+
 })
 
 $newMessageSaveButton.click(async function() {

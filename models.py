@@ -94,7 +94,20 @@ class User(db.Model):
         nullable=False,
     )
 
-    messages = db.relationship('Message')
+    private = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=False
+    )
+
+    admin = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=False
+    )
+
+    messages = db.relationship('Message', cascade="all,delete", backref="user")
+
 
     followers = db.relationship(
         "User",
@@ -218,7 +231,10 @@ class Message(db.Model):
         nullable=False,
     )
 
-    user = db.relationship('User')
+    # user = db.relationship('User')
+
+    # user = db.relationship('User', backref=backref("messages", cascade="all,delete"))
+
 
 
 def connect_db(app):
