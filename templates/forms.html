@@ -1,4 +1,4 @@
-{% macro display_user_card(user, current_user=false) -%}
+{% macro display_user_card(user, current_user=false, pending=false) -%}
 
 <div class="card user-card">
     <div class="card-inner">
@@ -11,12 +11,15 @@
                 <p>@{{ user.username }}</p>
             </a>
 
+
             {% if not current_user %}
-                {% if g.user.is_following(user) %}
+                {% if g.user.is_following_confirmed(user) %}
                     <form method="POST"
                         action="/users/stop-following/{{ user.id }}">
                     <button class="btn btn-primary btn-sm">Unfollow</button>
                     </form>
+                {% elif g.user.is_following(user) %}
+                    <button class="btn btn-primary btn-sm">Pending</button>
                 {% else %}
                     <form method="POST" action="/users/follow/{{ user.id }}">
                     <button class="btn btn-outline-primary btn-sm">Follow</button>
@@ -34,7 +37,7 @@
             <li class="stat">
               <p class="small">Messages</p>
               <h4>
-                <a href="/users/{{ g.user.id }}">{{ g.user.messages | length }}</a>
+                <a href="/users/{{ g.user.id }}/messages">{{ g.user.messages | length }}</a>
               </h4>
             </li>
             <li class="stat">
@@ -51,7 +54,12 @@
             </li>
         </ul>
         {% endif %}
-        
+        {% if pending %}
+        <form method="POST" 
+            action="/users/accept-follower/{{ user.id }}" class="d-flex justify-content-center">
+        <button class="btn btn-outline-primary btn-sm">Accept</button>
+        </form>
+        {% endif %}
       </div>
     </div>
 

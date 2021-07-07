@@ -14,7 +14,7 @@
             <div class="message-heading">
               <a href="/users/{{ message.user.id }}">@{{ message.user.username }}</a>
               {% if g.user %}
-                {% if g.user.id == message.user.id %}
+                {% if g.user.id == message.user.id or g.user.admin == True %}
                   <form method="POST"
                         action="/messages/{{ message.id }}/delete">
                     <button class="btn btn-outline-danger">Delete</button>

@@ -3,16 +3,45 @@
 
 {% block user_details %}
   
-<div class="col-sm-6">
-  <ul class="list-group" id="messages">
 
-    {% for message in message_list %}
 
-      {{ forms.display_message(message=message) }}
 
-    {% endfor %}
+<div class="col-sm-9">
 
-  </ul>
+  {% if pending %}
+  <div class="row justify-content-start">
+    <div class="col-sm-9">
+      <div class="row">
+        <h3>Follow Requests</h3>
+        {% for user in pending %}
+
+        <div class="col-lg-4 col-md-6 col-12">
+          {{ forms.display_user_card(user, current_user=false, pending=true) }}
+        </div>
+  
+        {% endfor %}
+
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+
+
+  <div class="row justify-content-start mt-5">
+    <div class="col-sm-9">
+      <ul class="list-group" id="messages">
+
+        {% for message in message_list %}
+
+          {{ forms.display_message(message=message) }}
+
+        {% endfor %}
+
+      </ul>
+    </div>
+  </div>
+
 </div>
 
 {% endblock %}

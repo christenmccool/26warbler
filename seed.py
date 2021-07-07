@@ -19,6 +19,13 @@ with open('generator/follows.csv') as follows:
 
 db.session.commit()
 
+follows = Follows.query.all()
+for follow in follows:
+    follow.following_confirmed_status = True
+    db.session.add(follow)
+db.session.commit()
+
+
 private_user1 = User.query.get(4)
 private_user1.private = True;
 private_user2 = User.query.get(5)
@@ -35,7 +42,30 @@ curr_user.admin = True
 user_to_follow1 = User.query.get(1)
 user_to_follow2 = User.query.get(2)
 
+user_to_follow1.admin  = True
+
 curr_user.following.append(private_user1)
 curr_user.following.append(user_to_follow1)
 curr_user.following.append(user_to_follow2)
+
+private_user1.following.append(curr_user)
+user_to_follow1.following.append(curr_user)
+user_to_follow2.following.append(curr_user)
+
+db.session.commit()
+
+
+follow1 = Follows.query.filter(Follows.user_following_id == curr_user.id, Follows.user_being_followed_id == user_to_follow1.id).first()
+follow1.following_confirmed_status = True
+
+follow2 = Follows.query.filter(Follows.user_following_id == curr_user.id, Follows.user_being_followed_id == user_to_follow2.id).first()
+follow2.following_confirmed_status = True
+
+follow3 = Follows.query.filter(Follows.user_following_id == curr_user.id, Follows.user_being_followed_id == private_user1.id).first()
+follow3.following_confirmed_status = True
+
+db.session.add(follow1)
+db.session.add(follow2)
+db.session.add(follow3)
+
 db.session.commit()

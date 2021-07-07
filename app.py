@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 import functools
 
 from forms import UserAddForm, LoginForm, MessageForm, UserEditForm, ChangePasswordForm
-from models import db, connect_db, User, Message, Likes
+from models import db, connect_db, User, Message, Likes, Follows
 
 CURR_USER_KEY = "curr_user"
 
@@ -175,8 +175,12 @@ def users_show(user_id):
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
+    
+    pending_user_list = []
+    if g.user.id == user_id:
+        pending_user_list = [follower for follower in g.user.followers if follower.is_following(g.user) and not follower.is_following_confirmed(g.user)] 
 
-    return render_template('users/show.html', user=user, message_list=messages)
+    return render_template('users/show.html', user=user, message_list=messages, pending=pending_user_list)
 
 
 @app.route('/users/<int:user_id>/following')
@@ -202,7 +206,12 @@ def users_followers(user_id):
     #     return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/followers.html', user=user, user_list=user.followers)
+
+    pending_user_list = []
+    if g.user.id == user_id:
+        pending_user_list = [follower for follower in g.user.followers if follower.is_following(g.user) and not follower.is_following_confirmed(g.user)] 
+
+    return render_template('users/followers.html', user=user, user_list=user.followers, pending=pending_user_list)
 
 
 @app.route('/users/follow/<int:follow_id>', methods=['POST'])
@@ -238,6 +247,23 @@ def stop_following(follow_id):
 
     # return redirect(f"/users/{g.user.id}/following")
     return redirect(url_for('show_following', user_id=g.user.id))
+
+@app.route('/users/accept-follower/<int:follower_id>', methods=['POST'])
+@check_loggedin
+def accept_follower(follower_id):
+    """Accept follower."""
+
+    # if not g.user:
+    #     flash("Access unauthorized.", "danger")
+    #     return redirect("/")
+
+    follower_user = User.query.get(follower_id)
+    follow = Follows.query.filter(Follows.user_being_followed_id==g.user.id, Follows.user_following_id==follower_user.id).first()
+    follow.following_confirmed_status = True
+    db.session.commit()
+
+    # return redirect(f"/users/{g.user.id}/following")
+    return redirect(url_for('users_followers', user_id=g.user.id))
 
 
 @app.route('/users/profile', methods=["GET", "POST"])
@@ -298,7 +324,7 @@ def change_password():
 
 @app.route('/users/delete', methods=["POST"])
 @check_loggedin
-def delete_user():
+def delete_self():
     """Delete user."""
 
     # if not g.user:
@@ -311,6 +337,19 @@ def delete_user():
     db.session.commit()
 
     return redirect(url_for('signup'))
+
+
+@app.route('/users/<int:user_id>/delete', methods=["POST"])
+@check_loggedin
+@is_admin
+def delete_user(user_id):
+    """Delete user by admin only."""
+
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+
+    return redirect(url_for('homepage'))
 
 
 ##############################################################################
@@ -377,7 +416,7 @@ def messages_destroy(message_id):
 
     msg = Message.query.get(message_id)
 
-    if msg.user_id != g.user.id:
+    if msg.user_id != g.user.id and g.user.admin == False:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
@@ -386,6 +425,23 @@ def messages_destroy(message_id):
 
     # return redirect(f"/users/{g.user.id}")
     return redirect(url_for('users_show', user_id=g.user.id))
+
+@app.route('/users/<int:user_id>/messages')
+@check_loggedin
+def show_own_messages(user_id):
+    """Show list of user's messages."""
+
+    user = User.query.get_or_404(user_id)
+
+    if (g.user and g.user.is_following(user)) or user.private == False:
+        messages = (Message
+                    .query
+                    .filter(Message.user_id == user_id)
+                    .order_by(Message.timestamp.desc())
+                    .limit(100)
+                    .all())
+
+    return render_template('users/messages.html', user=user, message_list=messages)
 
 
 

@@ -26,6 +26,8 @@ class Follows(db.Model):
         primary_key=True,
     )
 
+    following_confirmed_status = db.Column(db.Boolean, default=False)
+
 
 class Likes(db.Model):
     """Mapping user likes to warbles."""
@@ -135,13 +137,36 @@ class User(db.Model):
         """Is this user followed by `other_user`?"""
 
         found_user_list = [user for user in self.followers if user == other_user]
+
         return len(found_user_list) == 1
+
+    def is_followed_by_confirmed(self, other_user):
+        """Is this user confirmed to be followed by `other_user`?"""
+
+        if self.is_followed_by(other_user):
+            follow = Follows.query.filter(Follows.user_being_followed_id==self.id, Follows.user_following_id==other_user.id).first()
+            if follow.following_confirmed_status == True:
+                return True
+
+        return False
+
 
     def is_following(self, other_user):
-        """Is this user following `other_use`?"""
+        """Is this user following `other_user`?"""
 
         found_user_list = [user for user in self.following if user == other_user]
+
         return len(found_user_list) == 1
+
+    def is_following_confirmed(self, other_user):
+        """Is this user confirmed to follow `other_user`?"""
+
+        if self.is_following(other_user):
+            follow = Follows.query.filter(Follows.user_being_followed_id==other_user.id, Follows.user_following_id==self.id).first()
+            if follow.following_confirmed_status == True:
+                return True
+
+        return False
 
     @classmethod
     def signup(cls, username, email, password, image_url):

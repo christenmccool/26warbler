@@ -13,7 +13,7 @@
           <li class="stat">
             <p class="small">Messages</p>
             <h4>
-              <a href="/users/{{ user.id }}">{{ user.messages | length }}</a>
+              <a href="/users/{{ user.id }}/messages">{{ user.messages | length }}</a>
             </h4>
           </li>
           <li class="stat">
@@ -42,15 +42,22 @@
               <button class="btn btn-outline-danger ml-2">Delete Profile</button>
             </form>
             {% elif g.user %}
-            {% if g.user.is_following(user) %}
-            <form method="POST" action="/users/stop-following/{{ user.id }}">
-              <button class="btn btn-primary">Unfollow</button>
-            </form>
-            {% else %}
-            <form method="POST" action="/users/follow/{{ user.id }}">
-              <button class="btn btn-outline-primary">Follow</button>
-            </form>
-            {% endif %}
+              {% if g.user.is_following_confirmed(user) %}
+              <form method="POST" action="/users/stop-following/{{ user.id }}">
+                <button class="btn btn-primary">Unfollow</button>
+              </form>
+              {% elif g.user.is_following(user) %}
+              <button class="btn btn-primary btn-sm">Pending</button>
+              {% else %}
+              <form method="POST" action="/users/follow/{{ user.id }}">
+                <button class="btn btn-outline-primary">Follow</button>
+              </form>
+              {% endif %}
+              {% if g.user.admin == True %}
+              <form method="POST" action="/users/{{ user.id }}/delete" class="form-inline">
+                <button class="btn btn-outline-danger ml-2">Delete User</button>
+              </form>
+              {% endif %}
             {% endif %}
           </div>
         </ul>
@@ -59,10 +66,14 @@
   </div>
 </div>
 
+
 <div class="row">
   <div class="col-sm-3">
-    <h4 id="sidebar-username">@{{ user.username }}</h4>
+    <h4 id="sidebar-username"><a href="/users/{{user.id}}">@{{ user.username }}</a></h4>
     <p>{{ user.bio }}</p>
+    {% if user.admin == True %}
+    <p class='text-primary'>ADMIN</p>
+    {% endif %}
     <p class="user-location"><span class="fa fa-map-marker"></span>{{ user.location }}</p>
   </div>
 
@@ -72,3 +83,5 @@
 </div>
 
 {% endblock %}
+
+

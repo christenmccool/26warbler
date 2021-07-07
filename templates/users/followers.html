@@ -10,7 +10,11 @@
       {% for user in user_list %}
 
       <div class="col-lg-4 col-md-6 col-12">
-        {{ forms.display_user_card(user=user) }}
+        {% if user in pending %}
+          {{ forms.display_user_card(user=user, pending=true) }}
+        {% else %}
+          {{ forms.display_user_card(user=user) }}
+        {% endif %}
       </div>
 
       {% endfor %}
